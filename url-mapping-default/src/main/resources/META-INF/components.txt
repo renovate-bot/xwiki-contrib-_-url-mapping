@@ -1,0 +1,3 @@
+org.xwiki.contrib.urlmapping.internal.URLMappingResourceReferenceHandler
+org.xwiki.contrib.urlmapping.internal.URLPrefixHandlerRegistrationListener
+org.xwiki.contrib.urlmapping.internal.DefaultURLMappingRedirector

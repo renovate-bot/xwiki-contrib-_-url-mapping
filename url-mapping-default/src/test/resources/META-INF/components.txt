@@ -1,0 +1,4 @@
+org.xwiki.contrib.urlmapping.TestURLMappingPrefixHandler
+org.xwiki.contrib.urlmapping.TestDelayedURLMappingPrefixHandler
+org.xwiki.contrib.urlmapping.TestCustomIntroURLMappingPrefixHandler
+org.xwiki.contrib.urlmapping.TestCustomRuntimeConfigIntroHandlerMapping
