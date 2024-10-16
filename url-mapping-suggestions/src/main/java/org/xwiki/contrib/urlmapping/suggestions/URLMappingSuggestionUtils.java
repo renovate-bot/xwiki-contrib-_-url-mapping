@@ -40,6 +40,7 @@ import org.xwiki.query.QueryManager;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.BulletedListBlock;
 import org.xwiki.rendering.block.LinkBlock;
+import org.xwiki.rendering.block.ListItemBlock;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.listener.reference.ResourceType;
 import org.xwiki.stability.Unstable;
@@ -56,8 +57,6 @@ import com.xpn.xwiki.XWikiContext;
 @Unstable
 public class URLMappingSuggestionUtils
 {
-    private static final String DOC = "doc";
-
     @Inject
     private QueryManager queryManager;
 
@@ -100,10 +99,10 @@ public class URLMappingSuggestionUtils
             }
             List<Block> items = new ArrayList<>(results.size());
             for (SolrDocument result : results) {
-                items.add(new LinkBlock(
+                items.add(new ListItemBlock(Collections.singletonList(new LinkBlock(
                     Collections.emptyList(),
                     new ResourceReference((String) result.get("fullname"), ResourceType.DOCUMENT),
-                    false));
+                    false))));
             }
 
             return new BulletedListBlock(items);
@@ -122,5 +121,4 @@ public class URLMappingSuggestionUtils
 
         return StringUtils.replaceEach(solrValue, solrSpecialChars, escapedSolrSpecialChars);
     }
-
 }
