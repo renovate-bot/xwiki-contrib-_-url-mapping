@@ -50,4 +50,26 @@
       <version>${platform.version}</version>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.revapi</groupId>
+        <artifactId>revapi-maven-plugin</artifactId>
+        <configuration>
+          <analysisConfiguration>
+            <revapi.differences>
+              <differences>
+                <item>
+                  <ignore>true</ignore>
+                  <code>java.method.addedToInterface</code>
+                  <new>method int org.xwiki.contrib.urlmapping.URLMappingConfiguration::getRedirectHTTPStatus()</new>
+                  <justification>At this maturity level, it seems preferable to keep the interface clean of default</justification>
+                </item>
+              </differences>
+            </revapi.differences>
+          </analysisConfiguration>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -79,7 +79,7 @@ public class DefaultURLMappingResult implements URLMappingResult
         this.url = "";
         this.reference = reference;
         this.suggestions = null;
-        this.httpCode = 200;
+        this.httpCode = 0;
         this.configuration = configuration;
     }
 
@@ -106,7 +106,7 @@ public class DefaultURLMappingResult implements URLMappingResult
         this.url = url;
         this.reference = null;
         this.suggestions = null;
-        this.httpCode = 200;
+        this.httpCode = 0;
         this.configuration = configuration;
     }
 
@@ -119,7 +119,7 @@ public class DefaultURLMappingResult implements URLMappingResult
         this.url = "";
         this.reference = null;
         this.suggestions = suggestions;
-        this.httpCode = 404;
+        this.httpCode = 0;
         this.configuration = configuration;
     }
 

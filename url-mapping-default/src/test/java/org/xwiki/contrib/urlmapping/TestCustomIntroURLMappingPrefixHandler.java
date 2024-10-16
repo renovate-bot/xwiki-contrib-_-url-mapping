@@ -78,6 +78,17 @@ public class TestCustomIntroURLMappingPrefixHandler extends AbstractURLMappingPr
                     );
                 }
             },
+            new AbstractURLMapper("hello2")
+            {
+                @Override
+                public ResourceReference convert(DefaultURLMappingMatch match)
+                {
+                    return new EntityResourceReference(
+                        new DocumentReference("xwiki", "Main", "RedirectTarget"),
+                        EntityResourceAction.VIEW
+                    );
+                }
+            },
             new AbstractURLMapper()
             {
                 @Override
@@ -120,6 +131,12 @@ public class TestCustomIntroURLMappingPrefixHandler extends AbstractURLMappingPr
                             public String getNotFoundIntroMessage()
                             {
                                 return "";
+                            }
+
+                            @Override
+                            public int getRedirectHTTPStatus()
+                            {
+                                return 0;
                             }
 
                             @Override

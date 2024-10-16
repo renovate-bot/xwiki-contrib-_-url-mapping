@@ -87,12 +87,8 @@ public class DefaultURLMappingRedirector implements URLMappingRedirector
             : configuration.getNotFoundScreenTemplateName();
 
         int httpStatus = conversion.getHTTPStatus();
-        if (httpStatus == 0) {
-            httpStatus = isURLPresent ? 200 : 404;
-        }
-
         if (isURLPresent && (delay == 0 || templateName == null || templateName.isEmpty())) {
-            sendRedirect(response, url);
+            sendRedirect(response, url, getRedirectHTTPStatus(httpStatus, configuration.getRedirectHTTPStatus()));
         } else {
             Block suggestions = conversion.getSuggestions();
             Map<String, Object> m = new HashMap<>(4);
@@ -101,7 +97,7 @@ public class DefaultURLMappingRedirector implements URLMappingRedirector
             m.put("conversion", conversion);
             m.put("configuration", configuration);
             this.scriptContextManager.getScriptContext().setAttribute("urlmapper", m, ScriptContext.ENGINE_SCOPE);
-            response.setStatus(httpStatus);
+            response.setStatus(getHTTPStatus(httpStatus, isURLPresent));
             response.setContentType("text/html; charset=utf-8");
             try {
                 if (templateName.endsWith(".vm")) {
@@ -118,15 +114,34 @@ public class DefaultURLMappingRedirector implements URLMappingRedirector
                     "An error occurred while rendering the redirection screen, falling back to a simple redirection",
                     e
                 );
-                sendRedirect(response, url);
+                sendRedirect(response, url, conversion.getHTTPStatus());
             }
         }
     }
 
-    private static void sendRedirect(HttpServletResponse response, String url) throws URLMappingException
+    private static int getHTTPStatus(int httpStatus, boolean isURLPresent)
+    {
+        if (httpStatus == 0) {
+            return isURLPresent ? 200 : 404;
+        }
+
+        return httpStatus;
+    }
+
+    private static int getRedirectHTTPStatus(int httpStatus, int conversion)
+    {
+        return httpStatus == 0 ? conversion : httpStatus;
+    }
+
+    private static void sendRedirect(HttpServletResponse response, String url, int status) throws URLMappingException
     {
         try {
-            response.sendRedirect(url);
+            if (status == 0 || status == 302) {
+                response.sendRedirect(url);
+            } else {
+                response.setStatus(status);
+                response.setHeader("Location", url);
+            }
         } catch (IOException e) {
             throw new URLMappingException("Failed to redirect", e);
         }

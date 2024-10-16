@@ -53,7 +53,7 @@ public interface URLMappingResult
     Block getSuggestions();
 
     /**
-     * @return the HTTP status to send. 0 to use a sensible, default status.
+     * @return the HTTP status to send (as a redirect status if redirecting). 0 to use a sensible, default status.
      */
     int getHTTPStatus();
 

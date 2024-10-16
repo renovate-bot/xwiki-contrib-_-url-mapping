@@ -99,7 +99,7 @@ public class TestURLMappingPrefixHandler extends AbstractURLMappingPrefixHandler
                         @Override
                         public int getHTTPStatus()
                         {
-                            return 200;
+                            return 0;
                         }
 
                         @Override
@@ -136,7 +136,7 @@ public class TestURLMappingPrefixHandler extends AbstractURLMappingPrefixHandler
                 public URLMappingResult convert(URLMappingMatch match)
                 {
                     if (match.getMatchedURL().contains("missinglink")) {
-                        return new DefaultURLMappingResult(getConfiguration(), "/mycustomnotfound", 404);
+                        return new DefaultURLMappingResult(getConfiguration(), "/mycustomnotfound", 301);
                     }
 
                     return null;

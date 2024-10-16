@@ -43,6 +43,7 @@ public class DefaultURLMappingConfiguration implements URLMappingConfiguration
     /**
      * The possible configuration keys.
      */
+    @Unstable
     public enum Key
     {
         /**
@@ -78,7 +79,12 @@ public class DefaultURLMappingConfiguration implements URLMappingConfiguration
         /**
          * title.
          */
-        TITLE("title");
+        TITLE("title"),
+
+        /**
+         * Redirect HTTP status.
+         */
+        REDIRECT_HTTP_STATUS("redirectHttpStatus");
 
         private final String name;
 
@@ -146,6 +152,12 @@ public class DefaultURLMappingConfiguration implements URLMappingConfiguration
     public String getNotFoundIntroMessage()
     {
         return getString(Key.NOT_FOUND_INTRO_MESSAGE);
+    }
+
+    @Override
+    public int getRedirectHTTPStatus()
+    {
+        return getInt(Key.REDIRECT_HTTP_STATUS);
     }
 
     @Override

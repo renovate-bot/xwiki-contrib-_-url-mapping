@@ -64,4 +64,9 @@ public interface URLMappingConfiguration
      * @return the title to use for the redirection screen.
      */
     String getTitle();
+
+    /**
+     * @return the status to use as the HTTP status when redirecting after a successful URL resolve.
+     */
+    int getRedirectHTTPStatus();
 }

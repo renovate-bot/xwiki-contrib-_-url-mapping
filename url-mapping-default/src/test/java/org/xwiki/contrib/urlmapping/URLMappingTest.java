@@ -112,6 +112,7 @@ import static org.mockito.Mockito.when;
     TestURLMappingPrefixHandler.class,
     TestDelayedURLMappingPrefixHandler.class,
     TestCustomIntroURLMappingPrefixHandler.class,
+    TestCustomRedirectStatusURLMappingPrefixHandler.class,
     TestCustomRuntimeConfigIntroHandlerMapping.class,
     URLPrefixHandlerRegistrationListener.class,
     URLMappingResourceReferenceHandler.class
@@ -120,6 +121,8 @@ import static org.mockito.Mockito.when;
 @PageComponentList
 class URLMappingTest
 {
+    private static final String HTTP_HEADER_LOCATION = "Location";
+
     @MockComponent
     ConfigurationSource configurationSource;
 
@@ -211,6 +214,8 @@ class URLMappingTest
         conf("urlmapping.prefixhandlers.testcustomintro.prefix", "customintro");
         conf("urlmapping.prefixhandlers.testcustomintro.title", "Custom title");
         conf("urlmapping.prefixhandlers.testcustomintro.introMessage", "<Redirecting>. Please update your bookmarks.");
+        conf("urlmapping.prefixhandlers.testcustomredirect.prefix", "customredirect");
+        conf("urlmapping.prefixhandlers.testcustomredirect.redirectHttpStatus", 307);
         conf("urlmapping.prefixhandlers.customruntimeconfig.prefix", "customruntimeconfig");
         conf("logging.deprecated.enabled", true);
     }
@@ -345,7 +350,8 @@ class URLMappingTest
     void testCustomConfigurationForMissingConversion() throws Exception
     {
         httpGet("/myprefix/01missinglink");
-        verify(this.response).sendRedirect("/mycustomnotfound");
+        verify(this.response).setStatus(301);
+        verify(this.response).setHeader(HTTP_HEADER_LOCATION, "/mycustomnotfound");
     }
 
     @Test
@@ -372,6 +378,21 @@ class URLMappingTest
     {
         httpPost("/customintro/hello");
         verify(this.response).sendRedirect("/bye");
+    }
+
+    @Test
+    void testCustomRedirectStatusCodeConfiguration() throws Exception
+    {
+        httpPost("/customredirect/hello");
+        verify(this.response).setStatus(307);
+        verify(this.response).setHeader(HTTP_HEADER_LOCATION, "/bye");
+    }
+
+    @Test
+    void testNotFoundCustomRedirectStatusCodeConfiguration() throws Exception
+    {
+        httpPost("/customredirect/hello2");
+        verify(this.response).setStatus(404);
     }
 
     @Test
