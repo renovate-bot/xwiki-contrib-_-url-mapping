@@ -3,7 +3,7 @@
 URL Mapping is a framework to handle requests from configured prefixes.
 
 * Project Lead: [Raphaël Jakse](https://www.xwiki.org/xwiki/bin/view/XWiki/rjakse)
-* Documentation & Downloads: [Documentation & Download](https://extensions.xwiki.org/xwiki/bin/view/Extension/URL Mapping))
+* [Documentation & Download](https://extensions.xwiki.org/xwiki/bin/view/Extension/URL%20Mapping)
 * [Issue Tracker](https://jira.xwiki.org/browse/URLMAP)
 * Communication: [Forum](https://forum.xwiki.org/), [Chat](https://dev.xwiki.org/xwiki/bin/view/Community/Chat)
 * [Development Practices](https://dev.xwiki.org)
