@@ -127,7 +127,7 @@ public class DefaultURLMappingConfiguration implements URLMappingConfiguration
             return "";
         }
 
-        return getSpecific(Key.PREFIX, null);
+        return getSpecific(Key.PREFIX, "");
     }
 
     @Override
