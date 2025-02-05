@@ -152,5 +152,13 @@ public class DefaultURLMappingResult implements URLMappingResult
     {
         return this.configuration;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("URLMappingResult[url: [%s], code: [%d], ref: [%s], suggestion: [%b]]", url, httpCode,
+            reference,
+            suggestions != null);
+    }
 }
 

@@ -91,24 +91,34 @@ public class URLPrefixHandlerRegistrationListener implements EventListener
             // ComponentDescriptorAddedEvent will be sent for them.
             //  see https://jira.xwiki.org/browse/XWIKI-18563. When this is fixed, we won't need anymore to listen to
             // ApplicationStartedEvent.
+            logger.debug("Received application started event, will register all prefix handlers");
             registerAllHandlers();
         } else if (event instanceof ComponentDescriptorAddedEvent) {
             ComponentManager componentManager = (ComponentManager) source;
             ComponentDescriptor<?> descriptor = (ComponentDescriptor<?>) data;
 
             String name = descriptor.getRoleHint();
+
+            logger.debug("ComponentDescriptorAddedEvent for a URLMappingPrefixHandler with hint [{}]", name);
+
             try {
                 URLMappingPrefixHandler handler = componentManager.getInstance(URLMappingPrefixHandler.class, name);
                 registerHandler(handler, name);
             } catch (ComponentLookupException e) {
-                logger.error("Could not register a URL Mapping resolver for [{}])", name, e);
+                logger.error("Could not register a URL Mapping prefix handler for [{}])", name, e);
             }
         } else if (event instanceof ComponentDescriptorRemovedEvent) {
             ComponentDescriptor<?> descriptor = (ComponentDescriptor<?>) data;
             String name = descriptor.getRoleHint();
+            logger.debug("ComponentDescriptorRemovedEvent for a URLMappingPrefixHandler with hint [{}]", name);
             unregisterHandler(name);
         }
 
+        updateSupportedTypes();
+    }
+
+    private void updateSupportedTypes()
+    {
         try {
             URLMappingResourceReferenceHandler urlMappingHandler = rootComponentManagerProvider.get().getInstance(
                     new DefaultParameterizedType(
@@ -119,10 +129,11 @@ public class URLPrefixHandlerRegistrationListener implements EventListener
             List<URLMappingPrefixHandler> handlers =
                 contextComponentManagerProvider.get().getInstanceList(URLMappingPrefixHandler.class);
             List<String> types = handlers.stream()
-                .map(h -> h.getPrefix())
+                .map(URLMappingPrefixHandler::getPrefix)
                 .filter(Objects::nonNull)
                 .map(prefix -> StringUtils.strip(prefix, "/"))
                 .collect(Collectors.toList());
+            logger.debug("Updating supported types: [{}]", types);
             urlMappingHandler.setSupportedTypes(types);
         } catch (ComponentLookupException e) {
             logger.error("Failed to update the supported URL prefixes", e);
@@ -133,8 +144,12 @@ public class URLPrefixHandlerRegistrationListener implements EventListener
     {
         String prefix = handler.getPrefix();
         if (StringUtils.isEmpty(prefix)) {
+            logger.debug("URL prefix handler [{}], name [{}] doesn't have a prefix, it will not be registered.",
+                handler.getClass().getName(), name);
             return;
         }
+        logger.debug("Registering URL prefix handler [{}], name [{}] with prefix [{}].", handler.getClass().getName(),
+            name, prefix);
         URLMappingResourceReferenceResolver.register(name, prefix, rootComponentManagerProvider.get());
     }
 
@@ -154,6 +169,7 @@ public class URLPrefixHandlerRegistrationListener implements EventListener
 
     private void unregisterHandler(String name)
     {
+        logger.debug("Unregistering URL prefix handler with name [{}]", name);
         rootComponentManagerProvider.get().unregisterComponent(URLMappingResourceReferenceResolver.class, name);
     }
 }

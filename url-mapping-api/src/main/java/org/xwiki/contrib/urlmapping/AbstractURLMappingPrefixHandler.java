@@ -45,6 +45,8 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.descriptor.ComponentDescriptor;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.configuration.ConfigurationSource;
@@ -87,6 +89,7 @@ import org.xwiki.rendering.block.Block;
 public abstract class AbstractURLMappingPrefixHandler implements URLMappingPrefixHandler
 {
     private static final int HTTP_ERROR_CODE = 404;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractURLMappingPrefixHandler.class);
 
     @Inject
     private ComponentDescriptor<URLMappingPrefixHandler> descriptor;
@@ -113,6 +116,8 @@ public abstract class AbstractURLMappingPrefixHandler implements URLMappingPrefi
             URLMappingResult result = convert(mapper, path, method, request);
 
             if (result != null) {
+                LOGGER.debug("Converted path [{}], method [{}] with mapper [{}]", path, method,
+                    mapper.getClass().getName());
                 return result;
             }
         }
@@ -135,7 +140,9 @@ public abstract class AbstractURLMappingPrefixHandler implements URLMappingPrefi
     private URLMappingResult convert(URLMapper mapper, String path, String method, HttpServletRequest request)
     {
         URLMappingSpecification spec = mapper.getSpecification();
+        String mapperName = mapper.getClass().getName();
         if (isHTTPMethodCompatible(method, spec)) {
+            LOGGER.debug("Mapper [{}] is not compatible with method [{}]", mapperName, method);
             return null;
         }
 
@@ -145,6 +152,7 @@ public abstract class AbstractURLMappingPrefixHandler implements URLMappingPrefi
             // if no regex is given, we consider that the mapper handles the URL (catch-all)
             matcher = matchOneRegex(path, regexes);
             if (matcher == null) {
+                LOGGER.debug("Mapper [{}] doesn't match path [{}]", mapperName, path);
                 return null;
             }
         }
@@ -152,9 +160,14 @@ public abstract class AbstractURLMappingPrefixHandler implements URLMappingPrefi
         DefaultURLMappingMatch m = new DefaultURLMappingMatch(path, method, matcher, request);
         URLMappingResult r = mapper.convert(m);
 
+        LOGGER.debug("Mapper [{}] converted path [{}], method [{}] to [{}]", mapperName, path,
+            method, r == null ? null : r.toString());
+
         if (r == null && mapper instanceof AbstractURLMapper) {
             Block suggestions = ((AbstractURLMapper) mapper).getSuggestions(m);
             if (suggestions != null) {
+                LOGGER.debug("Mapper [{}] suggests something for path [{}], method [{}]", mapperName,
+                    path, method);
                 return new DefaultURLMappingResult(getConfiguration(), suggestions, HTTP_ERROR_CODE);
             }
         }

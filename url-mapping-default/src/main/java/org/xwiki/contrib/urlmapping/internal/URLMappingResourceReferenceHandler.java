@@ -98,10 +98,13 @@ public class URLMappingResourceReferenceHandler extends AbstractResourceReferenc
     {
         if (reference instanceof URLMappingResourceReference) {
             try {
+                logger.debug("Handling reference [{}]", reference);
                 handle((URLMappingResourceReference) reference);
             } catch (URLMappingException e) {
                 throw new ResourceReferenceHandlerException("Failed to redirect", e);
             }
+        } else {
+            logger.debug("Reference [{}] is not an instance of URLMappingResourceReference, ignoring.", reference);
         }
         chain.handleNext(reference);
     }
@@ -116,14 +119,19 @@ public class URLMappingResourceReferenceHandler extends AbstractResourceReferenc
         try {
             URLMappingPrefixHandler handler = componentManagerProvider.get()
                 .getInstance(URLMappingPrefixHandler.class, ref.getName());
-            conversion = handler.convert(ref.getPath(), method, request);
+            String path = ref.getPath();
+            logger.debug("Converting path [{}], method [{}] using prefix handler [{}]", path, method,
+                handler.getClass().getName());
+            conversion = handler.convert(path, method, request);
         } catch (ComponentLookupException e) {
-            this.logger.error("Could not get the [{}] URL prefix handler", ref.getName(), e);
+            this.logger.error("Could not get the URL prefix handler named [{}]", ref.getName(), e);
         }
 
         if (conversion == null) {
+            logger.debug("The handler did not convert [{}], will use the not found configuration", ref);
             conversion = getNotFoundConfiguration();
         }
+        logger.debug("Converted [{}] to [{}]", ref, conversion);
         redirector.redirect(conversion);
     }
 

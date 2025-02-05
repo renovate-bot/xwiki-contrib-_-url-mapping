@@ -103,6 +103,7 @@ public class DefaultURLMappingRedirector implements URLMappingRedirector
                 if (templateName.endsWith(".vm")) {
                     templateName = templateName.substring(0, templateName.length() - 3);
                 }
+                logger.debug("Redirecting using template [{}] with values [{}]", templateName, m);
                 XWikiContext context = this.contextProvider.get();
                 if (context.getDoc() == null) {
                     // This avoids rendering errors
@@ -133,8 +134,9 @@ public class DefaultURLMappingRedirector implements URLMappingRedirector
         return httpStatus == 0 ? conversion : httpStatus;
     }
 
-    private static void sendRedirect(HttpServletResponse response, String url, int status) throws URLMappingException
+    private void sendRedirect(HttpServletResponse response, String url, int status) throws URLMappingException
     {
+        logger.debug("Redirecting to [{}], status [{}]", url, status);
         try {
             if (status == 0 || status == 302) {
                 response.sendRedirect(url);

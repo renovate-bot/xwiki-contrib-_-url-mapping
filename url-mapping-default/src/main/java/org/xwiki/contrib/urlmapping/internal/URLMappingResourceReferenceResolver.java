@@ -43,7 +43,6 @@ import static org.apache.commons.lang3.StringUtils.strip;
  */
 public class URLMappingResourceReferenceResolver implements ResourceReferenceResolver<ExtendedURL>
 {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(URLMappingResourceReferenceResolver.class);
 
     private static final String SLASH = "/";
@@ -85,9 +84,11 @@ public class URLMappingResourceReferenceResolver implements ResourceReferenceRes
         descriptor.setRoleHint(strippedPrefix);
         descriptor.setRoleType(new DefaultParameterizedType(null, ResourceReferenceResolver.class, ExtendedURL.class));
 
+        URLMappingResourceReferenceResolver r = new URLMappingResourceReferenceResolver(strippedPrefix, name);
+        LOGGER.debug("Registering a new instance of URLMappingResourceReferenceResolver, hint [{}], named [{}] using "
+                + "component manager [{}]", strippedPrefix, name, componentManager.getClass().getName());
         try {
-            componentManager.registerComponent(descriptor,
-                new URLMappingResourceReferenceResolver(strippedPrefix, name));
+            componentManager.registerComponent(descriptor, r);
         } catch (ComponentRepositoryException e) {
             LOGGER.error("Could not register URL Mapping resolver for prefix [{}]", strippedPrefix, e);
         }
