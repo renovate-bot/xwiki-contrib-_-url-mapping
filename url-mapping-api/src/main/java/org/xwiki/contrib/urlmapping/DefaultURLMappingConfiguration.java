@@ -37,8 +37,9 @@ public class DefaultURLMappingConfiguration implements URLMappingConfiguration
     private static final String HANDLERS_PREFIX = CONFIGURATION_PREFIX + "prefixhandlers.";
 
     private final String urlHandlerName;
-    private final ConfigurationSource configurationSource;
+
     private final Map<Key, Object> defaults;
+    private final Map<Key, Object> conf;
 
     /**
      * The possible configuration keys.
@@ -49,54 +50,61 @@ public class DefaultURLMappingConfiguration implements URLMappingConfiguration
         /**
          * Prefix.
          */
-        PREFIX("prefix"),
+        PREFIX("prefix", false),
 
         /**
          * Delay.
          */
-        DELAY("delay"),
+        DELAY("delay", true),
 
         /**
          * Redirect screen template.
          */
-        REDIRECT_SCREEN_TEMPLATE("redirectScreenTemplate"),
+        REDIRECT_SCREEN_TEMPLATE("redirectScreenTemplate", false),
 
         /**
          * Not found screen template.
          */
-        NOT_FOUND_SCREEN_TEMPLATE("notFoundScreenTemplate"),
+        NOT_FOUND_SCREEN_TEMPLATE("notFoundScreenTemplate", false),
 
         /**
          * Intro message.
          */
-        INTRO_MESSAGE("introMessage"),
+        INTRO_MESSAGE("introMessage", false),
 
         /**
          * Not found message.
          */
-        NOT_FOUND_INTRO_MESSAGE("notFoundIntroMessage"),
+        NOT_FOUND_INTRO_MESSAGE("notFoundIntroMessage", false),
 
         /**
          * title.
          */
-        TITLE("title"),
+        TITLE("title", false),
 
         /**
          * Redirect HTTP status.
          */
-        REDIRECT_HTTP_STATUS("redirectHttpStatus");
+        REDIRECT_HTTP_STATUS("redirectHttpStatus", true);
 
         private final String name;
+        private final boolean isInt;
 
-        Key(String name)
+        Key(String name, boolean isInt)
         {
             this.name = name;
+            this.isInt = isInt;
         }
 
         @Override
         public String toString()
         {
             return this.name;
+        }
+
+        private boolean isInt()
+        {
+            return isInt;
         }
     }
 
@@ -107,11 +115,26 @@ public class DefaultURLMappingConfiguration implements URLMappingConfiguration
     public DefaultURLMappingConfiguration(ConfigurationSource configurationSource, String urlHandlerName)
     {
         this.urlHandlerName = urlHandlerName;
-        this.configurationSource = configurationSource;
         this.defaults = new EnumMap<>(Key.class);
         this.defaults.put(Key.DELAY, 0);
         this.defaults.put(Key.REDIRECT_SCREEN_TEMPLATE, "url-mapping/redirectscreen.vm");
         this.defaults.put(Key.NOT_FOUND_SCREEN_TEMPLATE, "url-mapping/notfoundscreen.vm");
+        this.conf = new EnumMap<>(Key.class);
+
+        for (Key key : Key.values()) {
+            Object v = key.isInt() ? getInt(key, configurationSource) : getString(key, configurationSource);
+            if (v != null) {
+                this.conf.put(key, v);
+            }
+
+            v = key.isInt()
+                ? getDefault(key, configurationSource, Integer.class, 0)
+                : getDefault(key, configurationSource, String.class, null);
+
+            if (v != null) {
+                this.defaults.put(key, v);
+            }
+        }
     }
 
     @Override
@@ -127,7 +150,7 @@ public class DefaultURLMappingConfiguration implements URLMappingConfiguration
             return "";
         }
 
-        return getSpecific(Key.PREFIX, "");
+        return (String) this.conf.getOrDefault(Key.PREFIX, "");
     }
 
     @Override
@@ -168,29 +191,60 @@ public class DefaultURLMappingConfiguration implements URLMappingConfiguration
 
     private String getString(Key property)
     {
-        Object d = this.defaults.get(property);
-        return getSpecific(property, d instanceof String ? (String) d : null);
+        Object v = getConf(property);
+
+        if (v instanceof String) {
+            return (String) v;
+        }
+
+        return null;
+    }
+
+    private Object getConf(Key property)
+    {
+        Object v = this.conf.get(property);
+        if (v == null) {
+            v = this.defaults.get(property);
+        }
+        return v;
     }
 
     private int getInt(Key property)
     {
-        Object d = this.defaults.get(property);
-        return getSpecific(property, d instanceof Integer ? (Integer) d : 0);
+        Object v = getConf(property);
+
+        if (v instanceof Integer) {
+            return (int) v;
+        }
+
+        return 0;
     }
 
-    private <T> T getSpecific(Key property, T defaultValue)
+    private String getString(Key property, ConfigurationSource configurationSource)
+    {
+        return getSpecific(property, configurationSource, String.class);
+    }
+
+    private Integer getInt(Key property, ConfigurationSource configurationSource)
+    {
+        return getSpecific(property, configurationSource, Integer.class);
+    }
+
+    private <T> T getSpecific(Key property, ConfigurationSource configurationSource, Class<T> clazz)
     {
         if (this.urlHandlerName == null) {
-            return getDefault(property, defaultValue);
+            T d = null;
+            try {
+                d = clazz.cast(this.defaults.get(property));
+            } catch (Exception ignored) { }
+            return getDefault(property, configurationSource, clazz, d);
         }
-        return configurationSource.getProperty(
-            HANDLERS_PREFIX + this.urlHandlerName + '.' + property,
-            getDefault(property, defaultValue));
+        return configurationSource.getProperty(HANDLERS_PREFIX + this.urlHandlerName + '.' + property, clazz);
     }
 
-    private <T> T getDefault(Key property, T defaultValue)
+    private <T> T getDefault(Key property, ConfigurationSource configurationSource, Class<T> clazz, T defaultValue)
     {
-        T value = configurationSource.getProperty(CONFIGURATION_PREFIX + "default." + property, defaultValue);
+        T value = configurationSource.getProperty(CONFIGURATION_PREFIX + "default." + property, clazz, defaultValue);
         if (value == null || (value instanceof String && ((String) value).isEmpty())) {
             return defaultValue;
         }
