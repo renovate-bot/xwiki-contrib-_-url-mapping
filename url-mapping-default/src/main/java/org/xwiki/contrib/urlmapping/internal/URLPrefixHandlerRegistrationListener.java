@@ -19,10 +19,10 @@
  */
 package org.xwiki.contrib.urlmapping.internal;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -126,13 +126,18 @@ public class URLPrefixHandlerRegistrationListener implements EventListener
                         ResourceReferenceHandler.class,
                         ResourceType.class
                     ), "urlmapping");
-            List<URLMappingPrefixHandler> handlers =
-                contextComponentManagerProvider.get().getInstanceList(URLMappingPrefixHandler.class);
-            List<String> types = handlers.stream()
-                .map(URLMappingPrefixHandler::getPrefix)
-                .filter(Objects::nonNull)
-                .map(prefix -> StringUtils.strip(prefix, "/"))
-                .collect(Collectors.toList());
+            Map<String, URLMappingPrefixHandler> handlers =
+                contextComponentManagerProvider.get().getInstanceMap(URLMappingPrefixHandler.class);
+            Collection<String> types = new ArrayList<>(handlers.size());
+            for (Map.Entry<String, URLMappingPrefixHandler> entry : handlers.entrySet()) {
+                String type = StringUtils.strip(entry.getValue().getPrefix(), "/");
+                if (StringUtils.isEmpty(type)) {
+                    logger.warn("URL Mapping handler with hint [{}] has no prefix, it won't be used", entry.getKey());
+                } else {
+                    types.add(type);
+                    logger.debug("URL Mapping handler with hint [{}] has prefix [{}]", entry.getKey(), type);
+                }
+            }
             logger.debug("Updating supported types: [{}]", types);
             urlMappingHandler.setSupportedTypes(types);
         } catch (ComponentLookupException e) {
