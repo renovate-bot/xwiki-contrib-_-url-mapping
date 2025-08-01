@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.xwiki.contrib.urlmapping</groupId>
     <artifactId>url-mapping</artifactId>
-    <version>0.0.6-SNAPSHOT</version>
+    <version>0.0.6</version>
   </parent>
   <artifactId>url-mapping-default</artifactId>
   <name>URL Mapping</name>
