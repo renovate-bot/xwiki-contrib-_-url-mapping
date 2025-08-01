@@ -19,10 +19,6 @@
  */
 package org.xwiki.contrib.urlmapping;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
