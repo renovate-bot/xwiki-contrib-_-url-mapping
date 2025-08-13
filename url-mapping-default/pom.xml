@@ -31,9 +31,6 @@
   <name>URL Mapping</name>
   <properties>
     <xwiki.extension.namespaces>{root}</xwiki.extension.namespaces>
-
-    <!-- TODO: remove when upgrading to a test framework which does not need commons-lang -->
-    <xwiki.enforcer.enforce-commons-lang3.skip>true</xwiki.enforcer.enforce-commons-lang3.skip>
   </properties>
   <dependencies>
     <dependency>
